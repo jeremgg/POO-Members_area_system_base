@@ -4,18 +4,6 @@
 
 
 
-    //------
-
-    //debug
-    $db = App::getDatabase();
-    $req = $db->query("SELECT * FROM users")->fetchAll();
-    var_dump($req);
-    die();
-
-    //------
-
-
-
     //Verify that data has been send via the registration form
     if(!empty($_POST)){
 
@@ -24,59 +12,49 @@
 
 
         //Connection to the database
-        require_once 'inc/db.php';
+        $db = App::getDatabase();
 
 
-        //Check that the username and email fields are not empty and that they are in the correct format
-        if(empty($_POST['username']) || !preg_match('/^[a-zA-Z0-9_]+$/', $_POST['username'])){
-            $errors['username'] = "Votre pseudo n'est pas valide";
-        }
-        else{
-            //Verify that the nickname does not exist in the database
-            $req = $pdo->prepare("SELECT id FROM users WHERE username = ?");
-            $req->execute([$_POST['username']]);
-            $user = $req->fetch();
+        //validate the form data
+        $validateForm = new ValidateForm($_POST);
 
-            //If the nickname is already taken from the database, an error message is displayed
-            if($user){
-                $errors['username'] = "Ce pseudo est déja prit";
-            }
-        }
 
-        if(empty($_POST['email']) || !filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)){
-            $errors['email'] = "Votre email n'est pas valide";
-        }
-        else{
-            //Verify that the email does not exist in the database
-            $req = $pdo->prepare("SELECT id FROM users WHERE email = ?");
-            $req->execute([$_POST['email']]);
-            $user = $req->fetch();
-
-            //If the email is already taken from the database, an error message is displayed
-            if($user){
-                $errors['email'] = "Cet email est déja utilisé";
-            }
+        //check that the username field is not empty and that its data is in the correct format
+        //Check that the username do not exist in the database
+        //and if the nickname is already in the database, an error message is displayed
+        $validateForm->isAlphanumeric("username", "Votre pseudo n'est pas valide");
+        if($validateForm->isValid()){
+            $validateForm->isUniq("username", $db, "users", "Ce pseudo est déja pris");
         }
 
 
-        //Check that the password field is not empty
-        //and that it is the same as the password confirmation field
-        if(empty($_POST['password']) || $_POST['password'] != $_POST['password_confirm']){
-            $errors['password'] = "Votre mot de passe n'est pas valide";
+        //check that the email field is not empty and that its data is in the correct format
+        //Check that the username do not exist in the database
+        //and if the nickname is already in the database, an error message is displayed
+        $validateForm->isEmail("email", "Votre email n'est pas valide");
+        if($validateForm->isValid()){
+            $validateForm->isUniq("email", $db, "users", "Cet email est déja utilisé");
         }
+
+
+        // Verify that the password fields are not empty
+        // and have the same value
+        $validateForm->isConfirmed("password", "Votre mot de passe n'est pas valide");
 
 
         //If there are no errors, the user is register in the database
-        if(empty($errors)){
-            $req = $pdo->prepare("INSERT INTO users SET username = ?, email = ?, password = ?, confirmation_token = ?");
-
-            //Encrypt the user's password and execute the request
+        if($validateForm->isValid()){
+            //Encrypt the user's password and execute the query
             $password = password_hash ($_POST['password'], PASSWORD_BCRYPT);
             $token = str_random(60);  //define a random number of 60 digits
-            $req->execute([$_POST['username'], $_POST['email'], $password, $token]);
+            $db->query("INSERT INTO users SET username = ?, email = ?, password = ?, confirmation_token = ?", [
+                $_POST['username'],
+                $_POST['email'],
+                $password, $token
+            ]);
 
             //Retrieve the last generated id and send an email confirmation of the mail address
-            $user_id = $pdo->lastInsertId();
+            $user_id = $db->lastInsertId();
             mail($_POST['email'], "Confirmation de votre compte", "Afin de valider votre compte merci de cliquer sur ce lien\n\nhttp://localhost:8888/php/POO/member_area/confirm.php?id=$user_id&token=$token");
 
             //Send a confirmation message
@@ -85,6 +63,10 @@
             //Redirect the user to the login page
             header('Location:login.php');
             exit();
+        }
+        else{
+            //display error messages
+            $errors = $validateForm->getErrors();
         }
     }
 ?>

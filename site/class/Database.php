@@ -41,6 +41,15 @@
             }
             return $req;
         }
+
+
+
+        /**
+         * Retrieve the last generated id
+         */
+        public function lastInsertId(){
+            return $this->pdo->lastInsertId();
+        }
     }
 
 ?>

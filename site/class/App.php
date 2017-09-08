@@ -11,12 +11,12 @@
          * initialize the connection configuration to the database only once
          * @return obj
          */
-         static function getDatabase(){
-             if(!self::$db){
-                 self::$db = new Database('members', 'localhost', 'root', 'root');
-             }
-             return self::$db;
-         }
+        static function getDatabase(){
+            if(!self::$db){
+                self::$db = new Database('members', 'localhost', 'root', 'root');
+            }
+            return self::$db;
+        }
     }
 
 ?>
