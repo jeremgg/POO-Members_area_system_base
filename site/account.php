@@ -1,12 +1,11 @@
 <?php
-    session_start();
-
-    //Include file containing site functions
-    require_once 'inc/functions.php';
+    //load autoloader
+    require 'inc/autoloader.php';
 
 
-    //If the user is not logged in, he does not have access to his personal page
-    logged_only();
+    //Initialize User Authentication
+    //And if the user is not logged in, he does not have access to his personal page
+    App::getAuth()->logged_only();
 
 
     //Verify that the password change form sent data
@@ -40,6 +39,7 @@
 
 <!-- Display user's nickname -->
 <h1>bonjour <?= $_SESSION['auth']->username; ?> et bienvenue !!!</h1>
+
 
 
 <!-- Display the form to change the password -->

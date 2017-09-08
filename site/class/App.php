@@ -21,6 +21,16 @@
 
 
          /**
+          * Create an instance of the auth class by initializing its properties
+          * @return obj
+          */
+         static function getAuth(){
+             return new Auth(Session::getInstance(), ["restrict_msg" => "Vous n'avez pas le droit d'accéder à cette page"]);
+         }
+
+
+
+         /**
           * Redirect the user to another page
           * @param  $page Redirect page
           */

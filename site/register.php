@@ -46,8 +46,7 @@
         if($validateForm->isValid()){
             //initialiser l'authentification de l'utilisateur
             //et enregistrer l'utilisateur dans la base de données avec les données du formulaire
-            $auth = new Auth($db);
-            $auth->register($_POST['username'], $_POST['email'], $_POST['password']);
+            App::getAuth()->register($db,  $_POST['username'], $_POST['email'], $_POST['password']);
 
             //Send a confirmation message
             Session::getInstance()->setFlash("success", "Un email de confirmation vous a été envoyé pour valider votre compte");

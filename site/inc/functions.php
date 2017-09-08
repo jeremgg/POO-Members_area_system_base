@@ -12,25 +12,6 @@
 
 
     /**
-     * If the user is not logged in, he does not have access to his personal page
-     * and he is redirected to the login page
-     */
-    function logged_only(){
-        if(!isset($_SESSION['auth'])){
-            //If we do not have a session we create a
-            if (session_status() == PHP_SESSION_NONE) {
-                session_start();
-            }
-
-            $_SESSION['flash']['danger'] = "Vous n'avez pas le droit d'accéder à cette page, vous devez être connecté";
-            header('location: login.php');
-            exit();
-        }
-    }
-
-
-
-    /**
      * Automatically reconnect the user if the login cookie exists
      */
     function reconnect_from_cookie(){
