@@ -212,6 +212,31 @@
             //Delete the authentication session
             $this->session->delete('auth');
         }
+
+
+
+        /**
+         * make a request to generate a new password
+         * @param $db    Connecting to the database
+         * @param $email User's email
+         */
+        public function resetPassword($db, $email){
+            //Save the user according to the email or pseudo entered in the form
+            //and that the user has a validated account
+            $user = $db->query('SELECT * FROM users WHERE email = ? AND confirmed_at IS NOT NULL', [$email])->fetch();
+
+            //If the user forgets his password, we generate a new password token
+            //Send an email confirmation and display a confirmation message
+            if($user){
+                $reset_token = Str::random(60);
+                $db->query('UPDATE users SET reset_token = ?, reset_at = NOW() WHERE id = ?', [$reset_token, $user->id]);
+                mail($_POST['email'], "Réinitialisation de votre mot de passe", "Afin de réinitialiser votre mot de passe merci de cliquer sur ce lien\n\nhttp://localhost:8888/php/POO/member_area/reset.php?id={$user->id}&token=$reset_token");
+                return $user;
+            }
+            else{
+                return false;
+            }
+        }
     }
 
 ?>
