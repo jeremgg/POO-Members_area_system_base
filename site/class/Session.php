@@ -80,6 +80,16 @@
         public function read($key){
             return isset($_SESSION[$key]) ? $_SESSION[$key] : null;
         }
+
+
+
+        /**
+         * Delete session
+         * @param  $key  Session Key
+         */
+        public function delete($key){
+            unset($_SESSION[$key]);
+        }
     }
 
 

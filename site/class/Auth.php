@@ -199,6 +199,19 @@
             setcookie('remember', $user_id . '==' . $remember_token . sha1($user_id . 'phone'), time() + 60 * 60 * 24 * 7);
 
         }
+
+
+
+        /**
+         * disconnect the user
+         */
+        public function logout(){
+            //Deleting the remember cookie that memorizes the connection
+            setcookie('remember', null, -1);
+
+            //Delete the authentication session
+            $this->session->delete('auth');
+        }
     }
 
 ?>

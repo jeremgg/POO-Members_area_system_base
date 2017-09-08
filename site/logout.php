@@ -1,20 +1,18 @@
 <?php
 
-    session_start();
+    //load autoloader
+    require 'inc/autoloader.php';
 
 
-    //Deleting the remember cookie that memorizes the connection
-    setcookie('remember', null, -1);
-
-
-    //Delete the authentication session
-    unset($_SESSION['auth']);
+    //Initialize User Authentication
+    //and disconnect the user
+    App::getAuth()->logout();
 
 
     //Display a disconnection confirmation message
-    $_SESSION['flash']['success'] = "Vous êtes maintenant déconnecté";
+    Session::getInstance()->setFlash("success", "Vous êtes maintenant déconnecté");
 
 
     //Redirect the user to the login page
-    header('location: login.php');
+    App::redirect('login.php');
 ?>
