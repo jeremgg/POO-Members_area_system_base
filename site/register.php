@@ -1,9 +1,19 @@
 <?php
-    //Include file containing site functions
-    require_once 'inc/functions.php';
+    //load autoloader
+    require_once 'inc/autoloader.php';
 
 
-    session_start();
+
+    //------
+
+    //debug
+    $db = App::getDatabase();
+    $req = $db->query("SELECT * FROM users")->fetchAll();
+    var_dump($req);
+    die();
+
+    //------
+
 
 
     //Verify that data has been send via the registration form
