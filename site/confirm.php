@@ -1,40 +1,27 @@
 <?php
 
-    //Save url parameters in variables
-    $user_id = $_GET['id'];
-    $token = $_GET['token'];
-
+    //load autoloader
+    require 'inc/autoloader.php';
 
 
     //Connection to the database
-    require 'inc/db.php';
+    $db = App::getDatabase();
 
 
-
-    //Execute the query and save the result
-    //Retrieve the user whose ID is passed as a parameter
-    $req = $pdo->prepare("SELECT * FROM users WHERE id = ?");
-    $req->execute([$user_id]);
-    $user = $req->fetch();
-
-    session_start();
+    //Initialize User Authentication
+    $auth = new Auth($db);
 
 
     //If the token of the query corresponds to the one passed as a parameter
     //set the confirmation date and delete the token in the Database
-    if($user && $user->confirmation_token == $token){
-        $req = $pdo->prepare("UPDATE users SET confirmation_token = null, confirmed_at = NOW() WHERE id = ?");
-        $req->execute([$user_id]);
-
+    if($auth->confirm($_GET['id'], $_GET['token'], Session::getInstance())){
         //Send a confirmation message
-        $_SESSION['flash']['success'] = "Votre compte a bien été validé";
-
-        $_SESSION['auth'] = $user;   //Save the user in the session
-        header('location: account.php');
+        Session::getInstance()->setFlash("success", "Votre compte a bien été validé");
+        App::redirect('account.php');
     }
     else{
-        $_SESSION['flash']['danger'] = "Ce token n'est plus valide";
-        header('location: login.php');
+        Session::getInstance()->setFlash("danger", "Ce token n'est plus valide");
+        App::redirect('login.php');
     }
 
 ?>

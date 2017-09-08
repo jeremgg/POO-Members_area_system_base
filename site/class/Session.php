@@ -58,6 +58,28 @@
             unset($_SESSION['flash']);
             return $flash;
         }
+
+
+
+        /**
+         * Write in the session
+         * @param  $key    Session Key
+         * @param  $value  The value to be written
+         */
+        public function write($key, $value){
+            $_SESSION[$key] = $value;
+        }
+
+
+
+        /**
+         * Check if the session variable is set, and read it
+         * @param  $key    Session Key
+         * @return array   Value of session key
+         */
+        public function read($key){
+            return isset($_SESSION[$key]) ? $_SESSION[$key] : null;
+        }
     }
 
 

@@ -42,6 +42,34 @@
             $user_id = $this->db->lastInsertId();
             mail($email, "Confirmation de votre compte", "Afin de valider votre compte merci de cliquer sur ce lien\n\nhttp://localhost:8888/php/POO/member_area/confirm.php?id=$user_id&token=$token");
         }
+
+
+
+        /**
+         * Validate user registration
+         * @param  $user_id  User ID
+         * @param  $token    The token of the mail
+         * @param  $session  The instance of the session
+         * @return bool
+         */
+        public function confirm($user_id, $token, $session){
+            //Execute the query and save the result
+            //Retrieve the user whose ID is passed as a parameter
+            $user = $this->db->query("SELECT * FROM users WHERE id = ?", [$user_id])->fetch();
+
+            //If the token of the query corresponds to the one passed as a parameter
+            //set the confirmation date and delete the token in the Database
+            if($user && $user->confirmation_token == $token){
+                $this->db->query("UPDATE users SET confirmation_token = null, confirmed_at = NOW() WHERE id = ?", [$user_id]);
+
+                //Save the user in the session
+                $session->write('auth', $user);
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
     }
 
 ?>
