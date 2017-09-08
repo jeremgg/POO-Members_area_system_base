@@ -44,25 +44,16 @@
 
         //If there are no errors, the user is register in the database
         if($validateForm->isValid()){
-            //Encrypt the user's password and execute the query
-            $password = password_hash ($_POST['password'], PASSWORD_BCRYPT);
-            $token = str_random(60);  //define a random number of 60 digits
-            $db->query("INSERT INTO users SET username = ?, email = ?, password = ?, confirmation_token = ?", [
-                $_POST['username'],
-                $_POST['email'],
-                $password, $token
-            ]);
-
-            //Retrieve the last generated id and send an email confirmation of the mail address
-            $user_id = $db->lastInsertId();
-            mail($_POST['email'], "Confirmation de votre compte", "Afin de valider votre compte merci de cliquer sur ce lien\n\nhttp://localhost:8888/php/POO/member_area/confirm.php?id=$user_id&token=$token");
+            //initialiser l'authentification de l'utilisateur
+            //et enregistrer l'utilisateur dans la base de données avec les données du formulaire
+            $auth = new Auth($db);
+            $auth->register($_POST['username'], $_POST['email'], $_POST['password']);
 
             //Send a confirmation message
-            $_SESSION['flash']['success'] = "Un email de confirmation vous a été envoyé pour valider votre compte";
+            Session::getInstance()->setFlash("success", "Un email de confirmation vous a été envoyé pour valider votre compte");
 
             //Redirect the user to the login page
-            header('Location:login.php');
-            exit();
+            App::redirect('login.php');
         }
         else{
             //display error messages

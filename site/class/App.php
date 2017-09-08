@@ -17,6 +17,17 @@
             }
             return self::$db;
         }
+
+
+
+         /**
+          * Redirect the user to another page
+          * @param  $page Redirect page
+          */
+         static function redirect($page){
+             header("Location: $page");
+             exit();
+         }
     }
 
 ?>

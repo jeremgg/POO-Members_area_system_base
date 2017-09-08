@@ -1,4 +1,8 @@
 <?php
+
+    //load autoloader
+    require 'inc/autoloader.php';
+
     //Include file containing site functions
     require_once 'inc/functions.php';
 

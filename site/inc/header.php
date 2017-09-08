@@ -1,11 +1,3 @@
-<?php
-    //If we do not have a session we create a
-    if (session_status() == PHP_SESSION_NONE) {
-        session_start();
-    }
-?>
-
-
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -49,11 +41,10 @@
 
         <div class="container">
             <!-- Check if you have messages in the flash session variable and display them -->
-            <?php if(isset($_SESSION['flash'])) : ?>
-                <?php foreach($_SESSION['flash'] as $type => $message) : ?>
+            <?php if(Session::getInstance()->hasFlash()) : ?>
+                <?php foreach(Session::getInstance()->getFlash() as $type => $message) : ?>
                     <div class="alert alert-<?= $type; ?>">
                         <?= $message; ?>
                     </div>
                 <?php endforeach; ?>
-                <?php unset($_SESSION['flash']);  //Then the messages are deleted ?>
             <?php endif; ?>
