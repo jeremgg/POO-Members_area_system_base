@@ -93,6 +93,112 @@
                 App::redirect('login.php');
             }
         }
+
+
+
+        /**
+         * Retrieve current user
+         */
+        public function user(){
+            if(!$this->session->read('auth')){
+                return false;
+            }
+            return $this->session->read('auth');
+        }
+
+
+
+        /**
+         * Connect the current user
+         * Write the current user in the session variable 'auth'
+         * @param  $user
+         */
+        public function connect($user){
+            $this->session->write('auth', $user);
+        }
+
+
+
+        /**
+         * Automatically reconnect the user if the login cookie exists
+         * @param  $db
+         */
+        public function connectFromCookie($db){
+            //Verify the presence of the remember cookie that memorizes the connection
+            if(isset($_COOKIE['remember']) && !$this->user()){
+                $remember_token = $_COOKIE['remember'];
+
+                //Retrieve the id of the user
+                $parts = explode('==', $remember_token);
+                $user_id = $parts[0];
+
+                //Retrieve the user corresponding to the id of the user
+                $user = $db->query('SELECT * FROM users WHERE id = ?', [$user_id]) ->fetch();
+
+                //If the query returns a result, the user is automatically logged in
+                if($user){
+                    $expected = $user_id . '==' . $user->remember_token . sha1($user_id . 'phone');
+                    if($expected == $remember_token){
+                        $this->connect($user);
+                        setcookie('remember', $remember_token, time() + 60 * 60 * 24 * 7);
+                    }
+                    else{
+                        setcookie('remember', null, -1);
+                    }
+                }
+                else{
+                    setcookie('remember', null, -1);
+                }
+            }
+        }
+
+
+
+        /**
+         * Allows user to log into account
+         * @param  $db  Connecting to the database
+         * @param  $username   Username sent from form
+         * @param  $password   Password sent from form
+         * @param  bool $remember   The 'remember me' button is checked or not
+         * @return array
+         */
+        public function login($db, $username, $password, $remember = false){
+            //Save the user according to the email or pseudo entered in the form
+            //and that the user has a validated account
+            $user = $db->query('SELECT * FROM users WHERE (username = :username OR email = :username) AND confirmed_at IS NOT NULL', ['username' => $username])->fetch();
+
+            //If the password entered by the user matches the password entered in the database
+            //on connecte l'utilisateur et redirect the user to his personal page
+            if(password_verify($password, $user->password)){
+                $this->connect($user);
+
+                //If the user checks the checkbox remember
+                if($remember){
+                    $this->remember($db, $user->id);
+                }
+                return $user;
+            }
+            else{
+                return false;
+            }
+        }
+
+
+
+        /**
+         * If the user checks the checkbox remember
+         * Create a cookie 'remember'
+         * @param  $db       Connecting to the database
+         * @param  $user_id  the User ID
+         */
+        public function remember($db, $user_id){
+            $remember_token = Str:: random(255);
+            $db->query('UPDATE users SET remember_token = ? WHERE id = ?', [$remember_token, $user_id]);
+
+            //The result of the request is saved in a relatively complex cookie
+            setcookie('remember', $user_id . '==' . $remember_token . sha1($user_id . 'phone'), time() + 60 * 60 * 24 * 7);
+
+        }
     }
 
 ?>

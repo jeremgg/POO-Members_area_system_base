@@ -3,58 +3,40 @@
     //load autoloader
     require 'inc/autoloader.php';
 
-    //Include file containing site functions
-    require_once 'inc/functions.php';
 
-
-    //Automatically reconnect the user if the login cookie exists
-    reconnect_from_cookie();
+    //Initialize User Authentication
+    //Connection to the database
+    //And automatically reconnect the user if the login cookie exists
+    $auth = App::getAuth();
+    $db = App::getDatabase();
+    $auth->connectFromCookie($db);
 
 
     //if the user is already logged in, he is redirected to his personal page
-    if(isset($_SESSION['auth'])){
-        header('location: account.php');
-        exit();
+    if($auth->user()){
+        App::redirect('account.php');
     }
 
 
-    //verify that the user is trying to connect and that no form fields are empty
+    //Check that the user is trying to connect and that no form fields are empty
+    //If this is the case, the user is connected
     if(!empty($_POST)){
+        //create session
+        $session = Session::getInstance();
+
         if(!empty($_POST['username']) && !empty($_POST['password'])){
-            ///Save the user according to the email or pseudo entered in the form
-            //and that the user has a validated account
-            require_once 'inc/db.php';
-            $req = $pdo->prepare('SELECT * FROM users WHERE (username = :username OR email = :username) AND confirmed_at IS NOT NULL');
-            $req->execute(['username' => $_POST['username']]);
-            $user = $req->fetch();
-
-
-            //If the password entered by the user matches the password entered in the database
-            //redirect the user to his personal page
-            if(password_verify($_POST['password'], $user->password)){
-                $_SESSION['auth'] = $user;
-                $_SESSION['flash']['success'] = "Bienvenue, vous êtes connecté à votre compte";
-
-                //If the user checks the checkbox remember
-                if($_POST['remember']){
-                    $remember_token = str_random(255);
-                    $req = $pdo->prepare('UPDATE users SET remember_token = ? WHERE id = ?');
-                    $req->execute([$remember_token, $user->id]);
-
-                    //The result of the request is saved in a relatively complex cookie
-                    setcookie('remember', $user->id . '==' . $remember_token . sha1($user->id . 'phone'), time() + 60 * 60 * 24 * 7);
-                }
-
-                header('location: account.php');
-                exit();
+            $user = $auth->login($db, $_POST['username'], $_POST['password'], isset($_POST['remember']));
+            if($user){
+                $session->setFlash("success", "Bienvenue, vous êtes connecté à votre compte");
+                App::redirect('account.php');
             }
             else{
-                $_SESSION['flash']['danger'] = "Identifiant ou mot de passe incorrect";
+                $session->setFlash("danger", "Identifiant ou mot de passe incorrect");
             }
         }
-
         else{
-            $_SESSION['flash']['danger'] = "Tous les champs doivent être renseignés";
+            $session->setFlash("danger", "Tous les champs doivent être renseignés");
+
         }
     }
 
