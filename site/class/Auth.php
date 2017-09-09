@@ -255,6 +255,21 @@
         public function checkResetToken($db, $user_id, $token){
             return $db->query('SELECT * FROM users WHERE id = ? AND reset_token IS NOT NULL AND reset_token = ? AND reset_at > DATE_SUB(NOW(), INTERVAL 30 MINUTE)', [$user_id, $token])->fetch();
         }
+
+
+
+        /**
+         * Change the user's password from his personal page
+         * @param  $db        Connecting to the database
+         * @param  $password  Password sent from the form
+         */
+        public function modifyPassword($db, $password){
+            $user_id = $_SESSION['auth']->id;
+
+            //Encrypt the user's password and update the password in the database
+            $password = password_hash($password, PASSWORD_BCRYPT);
+            $db->query('UPDATE users SET password = ? WHERE id = ?', [$password, $user_id]);
+        }
     }
 
 ?>

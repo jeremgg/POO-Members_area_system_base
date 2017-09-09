@@ -2,30 +2,28 @@
     //load autoloader
     require 'inc/autoloader.php';
 
+    //Connection to the database
+    //Initialize User Authentication
+    //create session
+    $db = App::getDatabase();
+    $auth = App::getAuth();
+    $session = Session::getInstance();
+
 
     //Initialize User Authentication
     //And if the user is not logged in, he does not have access to his personal page
-    App::getAuth()->logged_only();
+    $auth->logged_only();
 
 
-    //Verify that the password change form sent data
-    //And that the password fields have the same value
+    //Verify that the password change form sent data and that the password fields have the same value
+    //And change the password in the database
     if(!empty($_POST)){
         if(empty($_POST['password']) || $_POST['password'] != $_POST['password-confirm']){
-            $_SESSION['flash']['danger'] = "Les mots de passes ne correspondent pas";
+            $session->setFlash("danger", "Les mots de passes ne correspondent pas");
         }
         else{
-            $user_id = $_SESSION['auth']->id;
-
-            //Encrypt the user's password
-            $password= password_hash($_POST['password'], PASSWORD_BCRYPT);
-
-            //Update the password in the database
-            require_once 'inc/db.php';
-            $req = $pdo->prepare('UPDATE users SET password = ? WHERE id = ?');
-            $req->execute([$password, $user_id]);
-
-            $_SESSION['flash']['success'] = "Votre mot de passe a été changé avec succès";
+            $auth->modifyPassword($db, $_POST['password']);
+            $session->setFlash("success", "Votre mot de passe a été changé avec succès");
         }
     }
 ?>
