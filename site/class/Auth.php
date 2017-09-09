@@ -18,10 +18,19 @@
          * And initialize the session
          * @param $db The connection to the database
          */
-         public function __construct($session, $options = []){
-             $this->options = array_merge($this->options, $options);
-             $this->session = $session;
-         }
+        public function __construct($session, $options = []){
+            $this->options = array_merge($this->options, $options);
+            $this->session = $session;
+        }
+
+
+
+        /**
+         * Crypt the password
+         */
+        public function hashPassword($password){
+            return password_hash($password, PASSWORD_BCRYPT);
+        }
 
 
 
@@ -48,7 +57,7 @@
 
             //Retrieve the last generated id and send an email confirmation of the mail address
             $user_id = $db->lastInsertId();
-            mail($email, "Confirmation de votre compte", "Afin de valider votre compte merci de cliquer sur ce lien\n\nhttp://localhost:8888/tutoriaux/php/POO/member_area/confirm.php?id=$user_id&token=$token");
+            mail($email, "Confirmation de votre compte", "Afin de valider votre compte merci de cliquer sur ce lien\n\nhttp://localhost:8888/php/POO/member_area/confirm.php?id=$user_id&token=$token");
         }
 
 
@@ -236,6 +245,15 @@
             else{
                 return false;
             }
+        }
+
+
+
+        /**
+         * Recover the user according to url parameters
+         */
+        public function checkResetToken($db, $user_id, $token){
+            return $db->query('SELECT * FROM users WHERE id = ? AND reset_token IS NOT NULL AND reset_token = ? AND reset_at > DATE_SUB(NOW(), INTERVAL 30 MINUTE)', [$user_id, $token])->fetch();
         }
     }
 
