@@ -39,6 +39,12 @@
                     Session::getInstance()->setFlash('success','Votre mot de passe a bien été modifié');
                     App::redirect('account.php');
                 }
+                else if($_POST['password'] != $_POST['password-confirm']){
+                    Session::getInstance()->setFlash("danger", "Les mots de passes ne correspondent pas");
+                }
+                else{
+                    Session::getInstance()->setFlash("danger", "Tous les champs de formulaires doivent être renseignés");
+                }
             }
         }
 
